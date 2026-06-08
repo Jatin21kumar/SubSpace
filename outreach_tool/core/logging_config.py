@@ -58,20 +58,35 @@ def setup_logging(
 
     # Console handler
     console_handler = logging.StreamHandler(sys.stdout)
-    formatter: logging.Formatter
-    if json_output:
-        formatter = JSONFormatter()
+    
+    # If level is DEBUG, show everything on console with full format
+    # Otherwise, only show WARNING and above on console with minimal format
+    if effective_level == "DEBUG":
+        console_handler.setLevel(logging.DEBUG)
+        if json_output:
+            console_formatter = JSONFormatter()
+        else:
+            console_formatter = logging.Formatter(
+                "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+            )
     else:
-        formatter = logging.Formatter(
-            "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-        )
-    console_handler.setFormatter(formatter)
+        console_handler.setLevel(logging.WARNING)
+        console_formatter = logging.Formatter("%(levelname)s: %(message)s")
+    
+    console_handler.setFormatter(console_formatter)
     logger.addHandler(console_handler)
 
-    # Optional file handler
+    # Optional file handler (always gets the full effective_level)
     if log_file:
         file_handler = logging.FileHandler(log_file)
-        file_handler.setFormatter(JSONFormatter() if json_output else formatter)
+        file_handler.setLevel(effective_level)
+        if json_output:
+            file_formatter = JSONFormatter()
+        else:
+            file_formatter = logging.Formatter(
+                "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+            )
+        file_handler.setFormatter(file_formatter)
         logger.addHandler(file_handler)
 
     return logger

@@ -10,6 +10,7 @@ from typing import Any
 from outreach_tool.core.config import get_config
 from outreach_tool.core.logging_config import setup_logging
 from outreach_tool.orchestrator import OutreachOrchestrator
+from outreach_tool.utils.console import console
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -191,21 +192,11 @@ async def async_main(args: argparse.Namespace) -> int:
     orchestrator.results.save_statistics(orchestrator.stats)
 
     # Print summary to console
-    stats = result["statistics"]
-    print(f"\n{'=' * 50}")
-    print(f"📊 Outreach Run Summary: {result['run_id']}")
-    print(f"{'=' * 50}")
-    print(f"🏢 Companies found:     {stats['companies_found']}")
-    print(f"👤 Contacts found:      {stats['contacts_found']}")
-    print(f"✅ Contacts enriched:   {stats['contacts_enriched']}")
-    print(f"📧 Emails sent:         {stats['emails_sent']}")
-    print(f"❌ Emails failed:       {stats['emails_failed']}")
-    print(f"⏭️  Skipped (dedup):    {stats['contacts_skipped_dedup']}")
-    print(f"🛡️  Skipped (safety):   {stats['contacts_skipped_safety']}")
-    if stats["duration_seconds"]:
-        print(f"⏱️  Duration:           {stats['duration_seconds']:.1f}s")
-    print(f"💾 Output saved to:     {output_path}")
-    print(f"{'=' * 50}")
+    console.final_summary(
+        seed_domain=seed_domain,
+        stats=result["statistics"],
+        output_file=str(output_path),
+    )
 
     return 0
 

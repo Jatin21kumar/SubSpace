@@ -92,7 +92,7 @@ class HTTPClient:
     def _get_retry_predicate(self) -> Any:
         """Build a retry predicate based on configuration."""
         return retry_if_exception_type(
-            (APIError, httpx.HTTPStatusError, httpx.ConnectError, httpx.TimeoutException)
+            (APIError, httpx.ConnectError, httpx.TimeoutException)
         )
 
     async def _request(

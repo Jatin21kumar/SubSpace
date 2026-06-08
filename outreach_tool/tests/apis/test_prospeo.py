@@ -55,4 +55,30 @@ async def test_prospeo_enrich_person(mock_config):
             
             mock_http.request.assert_called_once()
             args, kwargs = mock_http.request.call_args
-            assert kwargs["json_data"]["email"] == "john@a.com"
+            assert kwargs["json_data"]["data"]["email"] == "john@a.com"
+
+@pytest.mark.asyncio
+async def test_prospeo_enrich_person_by_name(mock_config):
+    with patch("outreach_tool.apis.prospeo.HTTPClient") as MockHTTPClient:
+        mock_http = MockHTTPClient.return_value
+        mock_http.__aenter__.return_value = mock_http
+        
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "contact": {"email": "john@a.com"}
+        }
+        mock_http.request = AsyncMock(return_value=mock_response)
+        
+        async with ProspeoClient(api_key="test") as client:
+            await client.enrich_person(
+                first_name="John",
+                last_name="Doe",
+                company_domain="a.com"
+            )
+            
+            mock_http.request.assert_called_once()
+            args, kwargs = mock_http.request.call_args
+            payload = kwargs["json_data"]["data"]
+            assert payload["first_name"] == "John"
+            assert payload["last_name"] == "Doe"
+            assert payload["company_website"] == "a.com"

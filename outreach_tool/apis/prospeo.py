@@ -16,6 +16,7 @@ logger = logging.getLogger("outreach_tool.prospeo")
 class PersonProfile:
     """Represents a person profile from Prospeo."""
 
+    person_id: str | None = None
     first_name: str | None = None
     last_name: str | None = None
     email: str | None = None
@@ -31,6 +32,7 @@ class PersonProfile:
 class EnrichedProfile:
     """Enriched person profile."""
 
+    person_id: str | None = None
     first_name: str | None = None
     last_name: str | None = None
     email: str | None = None
@@ -151,6 +153,7 @@ class ProspeoClient:
                 phone = mobile_data.get("mobile") if isinstance(mobile_data, dict) else person_raw.get("phone")
 
                 profile = PersonProfile(
+                    person_id=person_raw.get("id"),
                     first_name=person_raw.get("first_name"),
                     last_name=person_raw.get("last_name"),
                     email=email,
@@ -190,6 +193,7 @@ class ProspeoClient:
         first_name: str | None = None,
         last_name: str | None = None,
         company_domain: str | None = None,
+        person_id: str | None = None,
     ) -> EnrichedProfile | None:
         """Enrich a person's profile using available identifiers.
 
@@ -199,6 +203,7 @@ class ProspeoClient:
             first_name: First name (requires last_name and company_domain).
             last_name: Last name.
             company_domain: Company domain.
+            person_id: Prospeo person ID from Search API.
 
         Returns:
             Enriched profile or None if enrichment failed.
@@ -206,22 +211,26 @@ class ProspeoClient:
         if not self._client:
             raise RuntimeError("Client not initialized. Use 'async with' context manager.")
 
-        body: dict[str, Any] = {}
+        body: dict[str, Any] = {"data": {}}
+        data = body["data"]
+        if person_id:
+            data["person_id"] = person_id
         if email:
-            body["email"] = email
+            data["email"] = email
         if linkedin_url:
-            body["linkedin_url"] = linkedin_url
+            data["linkedin_url"] = linkedin_url
         if first_name and last_name:
-            body["first_name"] = first_name
-            body["last_name"] = last_name
+            data["first_name"] = first_name
+            data["last_name"] = last_name
             if company_domain:
-                body["company_domain"] = company_domain
+                data["company_domain"] = company_domain
+                data["company_website"] = company_domain
 
-        if not body:
+        if not data:
             logger.warning("No valid identifiers provided for enrichment")
             return None
 
-        logger.debug("Enriching person: %s", email or linkedin_url or f"{first_name} {last_name}")
+        logger.debug("Enriching person: %s", person_id or email or linkedin_url or f"{first_name} {last_name}")
 
         try:
             response = await self._client.request(
@@ -237,6 +246,7 @@ class ProspeoClient:
         contact = result.get("contact", result)  # Handle different response structures
 
         return EnrichedProfile(
+            person_id=contact.get("id") or person_id,
             first_name=contact.get("first_name"),
             last_name=contact.get("last_name"),
             email=contact.get("email"),

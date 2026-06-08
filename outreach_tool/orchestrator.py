@@ -184,6 +184,8 @@ class OutreachOrchestrator:
                             email=contact.email,
                             first_name=person.first_name,
                             last_name=person.last_name,
+                            company_domain=company.domain,
+                            person_id=person.person_id,
                         )
 
                         if enriched:

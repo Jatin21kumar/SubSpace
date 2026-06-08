@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "outreach-tool"
+version = "0.1.0"
+description = "End-to-end Python CLI for automated outreach: Ocean.io → Prospeo → Brevo."
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.12"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "httpx>=0.27.0",
+    "tenacity>=8.0.0",
+    "pydantic>=2.0",
+    "pydantic-settings>=2.0",
+]
+
+[project.scripts]
+outreach = "outreach_tool.cli:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+    "pytest-cov>=4.0",
+    "ruff>=0.4",
+    "mypy>=1.9",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["outreach_tool*"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+select = ["ALL"]
+ignore = [
+    "ANN101",
+    "ANN102",
+    "COM812",
+    "D100",
+    "D104",
+    "ISC001",
+]
+
+[tool.ruff.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+check_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["outreach_tool/tests"]
+asyncio_mode = "auto"
+addopts = "--cov=outreach_tool --cov-report=term-missing --cov-fail-under=80"

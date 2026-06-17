@@ -24,6 +24,8 @@ outreach_tool/
     └── safety.py          # Rate limits, blocklists, safety checks
 ```
 
+Demo Video - https://drive.google.com/file/d/1Jg5DfyWMZGInamOPAkx18U7dG-ZKZqcr/view?usp=drivesdk
+
 ## Workflow
 
 1. **Seed Domain** → User provides a starting company domain
